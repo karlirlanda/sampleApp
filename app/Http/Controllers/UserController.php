@@ -61,11 +61,7 @@ class UserController extends Controller
     {
         $request['password'] = Hash::make($request->password);
 
-        $user = $this->user->create($request->all());
-
-        $user['_id'] = $this->encryptDecrypt($user->id, 'encrypt');
-
-        $user->save();
+        $this->user->create($request->all());
 
         return response()->json([
             'status' => 'success'
@@ -101,23 +97,5 @@ class UserController extends Controller
             'status' => 'success',
             'data' => $data,
         ]);
-    }
-
-    public function encryptDecrypt($string, $action = 'encrypt')
-    {
-        $encryptMethod = "AES-256-CBC";
-        $secretKey = 'LKohirhkfn';
-        $secretIv = 'nZn9HIg3Ba';
-        $key = hash('sha256', $secretKey);
-        $iv = substr(hash('sha256', $secretIv), 0, 16);
-
-        if ($action == 'encrypt') {
-            $output = openssl_encrypt($string, $encryptMethod, $key, 0, $iv);
-            $output = base64_encode($output);
-        } elseif ($action == 'decrypt') {
-            $output = openssl_decrypt(base64_decode($string), $encryptMethod, $key, 0, $iv);
-        }
-
-        return $output;
     }
 }
