@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Helpers\EncryptDecrypt;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateRequest extends FormRequest
@@ -20,10 +21,13 @@ class UpdateRequest extends FormRequest
      * @return array<string, \Illuminate\Contracts\Validation\Rule|array|string>
      */
     public function rules(): array
-    {
+    {   
+
+        $id = EncryptDecrypt::encryptDecrypt($this->input('id'), 'decrypt');
+
         return [
             'id' => 'required|exists:users,_id',
-            'username' => 'string|unique:users,username,'.$this->id,
+            'username' => 'string|unique:users,username,'.$id,
             'password' => 'string|min:6',
         ];
     }

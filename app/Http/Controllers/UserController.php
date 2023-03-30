@@ -92,7 +92,7 @@ class UserController extends Controller
             ->toArray();
 
         $ids['e'] = 2;
-        
+
         event(new UserCreated($ids));
 
         return response()->json([
@@ -102,7 +102,11 @@ class UserController extends Controller
 
     public function read(ReadRequest $request)
     {
-        $data = $this->user->find($this->encryptDecrypt($request->id, 'decrypt'));
+        $validated = $request->safe()->all();
+
+        $id = EncryptDecrypt::encryptDecrypt($validated['id'], 'decrypt');
+
+        $data = $this->user->find($id);
 
         if (!$data) {
             return response()->json([
@@ -121,13 +125,20 @@ class UserController extends Controller
     {
         $validated = $request->safe()->all();
 
-        $data = $this->user->find($this->encryptDecrypt($validated['id'], 'decrypt'));
+        $id = EncryptDecrypt::encryptDecrypt($validated['id'], 'decrypt');
 
-        $data->update($validated);
+        $data = $this->user->find($id)->update($validated);
+
+
+        if (!$data) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to update',
+            ], 422);
+        }
 
         return response()->json([
             'status' => 'success',
-            'data' => $data,
         ]);
     }
 }
