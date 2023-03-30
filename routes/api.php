@@ -23,3 +23,4 @@ Route::post('create', [UserController::class, 'create']);
 Route::post('read', [UserController::class, 'read']);
 Route::post('update', [UserController::class, 'update']);
 Route::post('list', [UserController::class, 'list']);
+Route::post('insert', [UserController::class, 'insertBatch']);

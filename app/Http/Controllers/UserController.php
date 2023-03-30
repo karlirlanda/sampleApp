@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Events\UserCreated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use App\Helpers\EncryptDecrypt;
 use App\Http\Requests\ListRequest;
 use App\Http\Requests\ReadRequest;
+use Illuminate\Support\Facades\DB;
 use App\Http\Requests\CreateRequest;
 use App\Http\Requests\UpdateRequest;
 use Illuminate\Support\Facades\Hash;
@@ -61,7 +64,36 @@ class UserController extends Controller
     {
         $request['password'] = Hash::make($request->password);
 
-        $this->user->create($request->all());
+        $user = $this->user->create($request->all());
+
+        $user['e'] = 1;
+
+        event(new UserCreated($user));
+
+        return response()->json([
+            'status' => 'success'
+        ]);
+    }
+
+    public function insertBatch(Request $request)
+    {
+
+        $data = [
+            ['username' => 'karl', 'password' => Hash::make('123456')],
+            ['username' => 'ricardo', 'password' => Hash::make('123456')],
+            ['username' => 'brandon', 'password' => Hash::make('123456')],
+        ];
+
+        User::insert($data);
+
+        // Get the IDs of the inserted rows
+        $ids = DB::table('users')->whereIn('username', array_column($data, 'username'))
+            ->pluck('id')
+            ->toArray();
+
+        $ids['e'] = 2;
+        
+        event(new UserCreated($ids));
 
         return response()->json([
             'status' => 'success'
